@@ -3,20 +3,6 @@
 # Address and port to listen on
 listen = "0.0.0.0:8233"
 
-# Optional authentication for miners connecting to this proxy
-# Enable this if the proxy is exposed to untrusted networks
-[proxy_auth]
-enabled = false
-username = ""
-password = ""
-
-# Upstream junocash node connection (authenticated)
-[upstream]
-url = "http://127.0.0.1:8232"
-username = "rpcuser"
-password = "rpcpassword"
-timeout = "30s"
-
 # RPC method whitelist - only these methods will be proxied
 # All other methods will be rejected with "Method not allowed"
 allowed_methods = [
@@ -30,7 +16,21 @@ allowed_methods = [
     # "getwalletinfo",
 
     # Optional: uncomment for additional blockchain queries
-    # "getblockhash",
-    # "getblock",
-    # "getbestblockhash",
+    "getblockhash",
+    "getblock",
+    "getbestblockhash",
 ]
+
+# Optional authentication for miners connecting to this proxy
+# Enable this if the proxy is exposed to untrusted networks
+[proxy_auth]
+enabled = false
+username = ""
+password = ""
+
+# Upstream junocash node connection (authenticated)
+[upstream]
+url = "http://127.0.0.1:8232"
+username = "rpcuser"
+password = "rpcpassword"
+timeout = "30s"
