@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type JSONRPCRequest struct {
@@ -34,15 +33,20 @@ type JSONRPCResponse struct {
 type Proxy struct {
 	config     *Config
 	httpClient *http.Client
+	zmqProxy   *ZMQProxy
 }
 
 func NewProxy(config *Config) *Proxy {
-	return &Proxy{
+	p := &Proxy{
 		config: config,
 		httpClient: &http.Client{
 			Timeout: config.GetUpstreamTimeout(),
 		},
 	}
+	if config.ZMQ.Enabled {
+		p.zmqProxy = NewZMQProxy(config)
+	}
+	return p
 }
 
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -172,23 +176,8 @@ func (p *Proxy) sendError(w http.ResponseWriter, id json.RawMessage, code int, m
 	json.NewEncoder(w).Encode(response)
 }
 
-func (p *Proxy) Start() error {
-	server := &http.Server{
-		Addr:         p.config.Listen,
-		Handler:      p,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: p.config.GetUpstreamTimeout() + 10*time.Second,
-		IdleTimeout:  120 * time.Second,
+func (p *Proxy) Stop() {
+	if p.zmqProxy != nil {
+		p.zmqProxy.Stop()
 	}
-
-	log.Printf("Starting juno-proxy on %s", p.config.Listen)
-	log.Printf("Upstream: %s", p.config.Upstream.URL)
-	log.Printf("Allowed methods: %v", p.config.AllowedMethods)
-	if p.config.ProxyAuth.Enabled {
-		log.Printf("Proxy authentication: enabled")
-	} else {
-		log.Printf("Proxy authentication: disabled")
-	}
-
-	return server.ListenAndServe()
 }
