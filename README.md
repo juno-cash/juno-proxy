@@ -26,11 +26,39 @@ sudo apt-get install -y libzmq3-dev
 sudo yum install -y zeromq-devel
 ```
 
+### Install Dependencies (Windows)
+
+1. Install [Go](https://go.dev/dl/) (1.21 or higher)
+2. Install [MSYS2](https://www.msys2.org/)
+3. Open MSYS2 MinGW64 terminal and install ZMQ:
+   ```bash
+   pacman -S mingw-w64-x86_64-zeromq
+   ```
+
 ## Building
+
+### Linux/macOS
 
 ```bash
 go build -o juno-proxy
 ```
+
+### Windows
+
+Using MSYS2 MinGW64 terminal:
+
+```bash
+go build -o juno-proxy.exe
+```
+
+Or using PowerShell with CGO enabled:
+
+```powershell
+$env:CGO_ENABLED = "1"
+go build -o juno-proxy.exe
+```
+
+Note: The ZMQ library requires CGO. Ensure your PATH includes the MinGW64 bin directory (e.g., `C:\msys64\mingw64\bin`) for the required DLLs at runtime.
 
 ## Configuration
 
