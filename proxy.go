@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -117,8 +118,9 @@ func (p *Proxy) checkProxyAuth(r *http.Request) bool {
 		return false
 	}
 
-	return parts[0] == p.config.ProxyAuth.Username &&
-		parts[1] == p.config.ProxyAuth.Password
+	usernameMatch := subtle.ConstantTimeCompare([]byte(parts[0]), []byte(p.config.ProxyAuth.Username)) == 1
+	passwordMatch := subtle.ConstantTimeCompare([]byte(parts[1]), []byte(p.config.ProxyAuth.Password)) == 1
+	return usernameMatch && passwordMatch
 }
 
 func (p *Proxy) forwardRequest(w http.ResponseWriter, body []byte) {
@@ -154,7 +156,9 @@ func (p *Proxy) forwardRequest(w http.ResponseWriter, body []byte) {
 	}
 
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		log.Printf("Error copying response body: %v", err)
+	}
 }
 
 func (p *Proxy) sendError(w http.ResponseWriter, id json.RawMessage, code int, message string) {

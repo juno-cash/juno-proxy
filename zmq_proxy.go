@@ -59,12 +59,14 @@ func (z *ZMQProxy) Start() error {
 	// Connect frontend to upstream
 	if err := z.frontend.Connect(z.config.ZMQ.UpstreamURL); err != nil {
 		z.cleanup()
+		z.ctx.Term()
 		return err
 	}
 
 	// Bind backend for clients
 	if err := z.backend.Bind(z.config.ZMQ.Listen); err != nil {
 		z.cleanup()
+		z.ctx.Term()
 		return err
 	}
 

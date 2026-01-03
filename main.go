@@ -61,7 +61,9 @@ func main() {
 		// Shutdown HTTP server with timeout
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		server.Shutdown(ctx)
+		if err := server.Shutdown(ctx); err != nil {
+			log.Printf("Error during server shutdown: %v", err)
+		}
 	}()
 
 	log.Printf("Starting juno-proxy on %s", config.Listen)
